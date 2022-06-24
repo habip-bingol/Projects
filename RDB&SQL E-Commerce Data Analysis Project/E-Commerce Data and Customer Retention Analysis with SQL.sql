@@ -169,8 +169,190 @@ ORDER BY 1
 
 
 
+-- 7. Write a query that returns customers who purchased both product 11 and 
+-- product 14, as well as the ratio of these products to the total number of 
+-- products purchased by the customer.
+
+SELECT Cust_id, prod_id, SUM(Order_Quantity) total_product_amount
+FROM combined_table
+WHERE Cust_id IN (  SELECT Cust_id 
+					FROM combined_table
+					WHERE Prod_id = 11 
+					INTERSECT
+					SELECT Cust_id
+					FROM combined_table
+					WHERE Prod_id = 14
+					)
+GROUP BY Cust_id, prod_id
+ORDER BY 1
 
 
+WITH tbl AS(
+SELECT Cust_id, prod_id, SUM(Order_Quantity) total_product_amount
+FROM combined_table
+WHERE Cust_id IN (  SELECT Cust_id 
+					FROM combined_table
+					WHERE Prod_id = 11 
+					INTERSECT
+					SELECT Cust_id
+					FROM combined_table
+					WHERE Prod_id = 14
+					)
+GROUP BY Cust_id, prod_id
+
+), tbl2 AS(
+SELECT DISTINCT  Cust_id, SUM(total_product_amount) over(PaRTITION BY Cust_id) total_amount
+FROM tbl
+), tbl3 AS (
+SELECT DISTINCT  Cust_id, SUM(total_product_amount) over(PARTITION BY Cust_id) prod11_14_total_amount
+FROM tbl
+WHERE prod_id = 11 or Prod_id = 14
+)
+SELECT tbl2.Cust_id,  CAST (1.0*(prod11_14_total_amount/total_amount) AS numeric (10,3)) ratio_of_prod_11_14
+FROM tbl2, tbl3
+WHERE tbl2.Cust_id = tbl3.Cust_id
+
+
+---- Customer Segmentation
+
+--- 1. Create a “view” that keeps visit logs of customers on a monthly basis. 
+-- (For each log, three field is kept: Cust_id, Year, Month)
+CREATE VIEW VISIT_LOGS AS 
+SELECT DISTINCT Cust_id, YEAR(Order_Date) YEAR_, MONTH(Order_Date) MONTH_,
+		COUNT(Order_Date) OVER(PARTITION BY Cust_id, YEAR(Order_Date), MONTH(Order_Date) ) count_of_visit
+FROM combined_table
+
+SELECT * 
+FROM VISIT_LOGS
+ORDER BY 1
+
+
+-- 2. Create a “view” that keeps the number of monthly visits by users. 
+-- (Show separately all months from the beginning business)
+
+CREATE VIEW VISIT_LOGS_MONTHLY AS 
+SELECT DISTINCT Cust_id,  MONTH(Order_Date) MONTH_,
+		COUNT(Order_Date) OVER(PARTITION BY Cust_id, MONTH(Order_Date) ) count_of_visit
+FROM combined_table
+
+SELECT * 
+FROM VISIT_LOGS_MONTHLY
+ORDER BY 1,2
+
+------ OPTIONAL  
+SELECT DISTINCT Cust_id,  DATENAME (M, Order_Date) MONTH_,
+		COUNT(Order_Date) OVER(PARTITION BY Cust_id, MONTH(Order_Date) ) count_of_visit
+FROM combined_table
+
+
+
+
+-- 3. For each visit of customers, create the next month of the visit as a separate column.
+
+WITH tbl AS (
+SELECT DISTINCT  Cust_id, Order_Date, 
+		ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
+FROM combined_table
+)
+SELECT DISTINCT Cust_id, Order_Date, 
+		LEAD(MONTH(Order_Date)) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit
+FROM tbl
+ORDER BY 1
+
+
+-- alternative
+SELECT DISTINCT Cust_id, Order_Date, 
+		LEAD(MONTH(Order_Date)) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit
+FROM (
+		SELECT DISTINCT  Cust_id, Order_Date, 
+				ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
+		FROM combined_table
+		) A
+
+
+
+-- 4. Calculate the monthly time gap between two consecutive visits by each  customer.
+
+WITH tbl AS (
+SELECT DISTINCT  Cust_id, Order_Date, 
+		ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
+FROM combined_table
+), tbl2 AS (
+SELECT DISTINCT Cust_id, Order_Date, 
+		LEAD(Order_Date) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit
+FROM tbl
+)
+SELECT  *, DATEDIFF(MONTH, Order_Date, next_visit) monthly_time_gap
+FROM tbl2
+ORDER BY 1
+
+
+-- 5. Categorise customers using average time gaps. Choose the most fitted labeling model for you.
+-- For example: 
+-- Labeled as churn if the customer hasn't made another purchase in the months since they made their first purchase.
+-- Labeled as regular if the customer has made a purchase every month.   Etc...
+
+
+
+--- if the customer has made a purchase every month, it's loyal
+--- 
+
+
+WITH tbl AS (
+SELECT DISTINCT  Cust_id, Order_Date, 
+		ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
+FROM combined_table
+), tbl2 AS (
+SELECT DISTINCT Cust_id, Order_Date, 
+		LEAD(Order_Date) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit, Rows_
+FROM tbl
+), tbl3 AS (
+SELECT  *, DATEDIFF(MONTH, Order_Date, next_visit) monthly_time_gap
+FROM tbl2
+), tbl4 AS (
+SELECT DISTINCT Cust_id, 
+		AVG(monthly_time_gap) OVER(PARTITION BY Cust_id) avg_monthly_time_gap, 
+		COUNT(Rows_) OVER(PARTITION BY Cust_id) Rows_count
+FROM tbl3
+), tbl5 AS (
+SELECT Cust_id, avg_monthly_time_gap , Rows_count
+FROM tbl4
+WHERE Rows_count >= 3  AND avg_monthly_time_gap NOT NULL AND Rows_count NOT  NULL
+)
+SELECT Cust_id, CAST (1.0*(Rows_count/avg_monthly_time_gap) AS numeric (10,3))
+FROM tbl5
+
+
+
+
+
+
+
+
+
+WITH tbl AS (
+SELECT DISTINCT  Cust_id, Order_Date, 
+		ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
+FROM combined_table
+), tbl2 AS (
+SELECT DISTINCT Cust_id, Order_Date, 
+		LEAD(Order_Date) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit, Rows_
+FROM tbl
+), tbl3 AS (
+SELECT  *, DATEDIFF(MONTH, Order_Date, next_visit) monthly_time_gap
+FROM tbl2
+), tbl4 AS (
+SELECT DISTINCT Cust_id, 
+		AVG(monthly_time_gap) OVER(PARTITION BY Cust_id) avg_monthly_time_gap, 
+		COUNT(Rows_) OVER(PARTITION BY Cust_id) Rows_count
+FROM tbl3
+), tbl5 AS (
+SELECT Cust_id, avg_monthly_time_gap , Rows_count
+FROM tbl4
+WHERE Rows_count >= 3  
+)
+SELECT Cust_id, CAST (1.0*(Rows_count/avg_monthly_time_gap) AS numeric (10,3))
+FROM tbl5
 
 
 
