@@ -1,27 +1,21 @@
+
+-------------------------dsut_dimen -----------------------
+
 SELECT *
 FROM cust_dimen
-
-SELECT *
-FROM orders_dimen
-
-SELECT *
-FROM prod_dimen
-
-select *
-from shipping_dimen
-
-SELECT *
-FROM market_fact
 
 -- for cust_dimen table, cust_id column will be arranged
 UPDATE dbo.cust_dimen 
 SET Cust_id = TRIM('Cust_' from Cust_id)
 FROM dbo.cust_dimen
-
---- changed type of cust_id to integer from nvarchar from design section 
-
+--- changed type of cust_id to integer from nvarchar from design section
 
 
+
+
+-------------------------orders_dimen------------------------
+SELECT *
+FROM orders_dimen
 
 -- for orders_dimen table, ord_id column will be arranged
 UPDATE dbo.orders_dimen 
@@ -33,6 +27,12 @@ alter table orders_dimen
 ALTER COLUMN Ord_id int;
 
 
+
+
+-------------------------prod_dimen------------------------
+
+SELECT *
+FROM prod_dimen
 
 -- for prod_dimen table, prod_id column will be arranged
 UPDATE dbo.prod_dimen 
@@ -46,6 +46,12 @@ ALTER COLUMN prod_id int;
 
 
 
+
+-------------------------shipping_dimen------------------------
+
+select *
+from shipping_dimen
+
 -- for shipping_dimen table, Ship_id column will be arranged
 UPDATE dbo.shipping_dimen 
 SET ship_id = TRIM('SHP_' from Ship_id)
@@ -57,7 +63,14 @@ ALTER COLUMN ship_id int;
 
 
 
--- for market_fact table, Ship_id column will be arranged
+
+
+-------------------------shipping_dimen------------------------
+SELECT *
+FROM market_fact
+
+ 
+-- for market_fact table  Cust_id, Ord_id, Prod_id and Ship_id columns will be arranged
 UPDATE dbo.market_fact
 SET Cust_id = TRIM('Cust_' from Cust_id), 
 	Ord_id = TRIM('Ord_' from Ord_id),
@@ -66,17 +79,21 @@ SET Cust_id = TRIM('Cust_' from Cust_id),
 FROM dbo.market_fact
 --- changed types of cust_id, prod_id, ord_id, ship_id to integer from nvarchar from design section 
 
-select *
-from shipping_dimen
+
+
+
 
 -- Since there is a column with the similar name in the orders_dimen table, 
 -- We changed the name of Order_ID(in Shipping_dimen table) into Cargo_track_id avoid confusion
+select *
+from shipping_dimen
 
 
 
 
--- 1. Using the columns of “market_fact”, “cust_dimen”, “orders_dimen”,
--- “prod_dimen”, “shipping_dimen”, Create a new table, named as “combined_table”
+
+-- 1. Using the columns of 'market_fact', 'cust_dimen', 'orders_dimen',
+-- 'prod_dimen', 'shipping_dimen', Create a new table, named as “combined_table”
 SELECT m.*, c.Customer_Name, c.Province, c.Region, c.Customer_Segment, o.Order_Date, o.Order_Priority, 
        p.Product_Category, p.Product_Sub_Category, s.Cargo_Track_id, s.Ship_Date, s.Ship_Mode
 INTO combined_table
@@ -96,11 +113,16 @@ FROM combined_table
 
 
 
+
+
 -- 2. Find the top 3 customers who have the maximum count of orders.
-SELECT TOP 3 Cust_id, Customer_Name,  COUNT(Ord_id) count_of_order
+SELECT TOP 3 Cust_id, Customer_Name,  COUNT(DISTINCT Ord_id) count_of_order
 FROM combined_table
 GROUP BY Cust_id, Customer_Name
 ORDER BY count_of_order DESC
+
+
+
 
 
 -- 3. Create a new column at combined_table as DaysTakenForDelivery that
@@ -117,6 +139,10 @@ SET DaysTakenForDelivery = DATEDIFF(DAY, order_date, Ship_Date)
 FROM combined_table 
 
 
+
+
+
+
 -- 4. Find the customer whose order took the maximum time to get delivered.
 
 SELECT TOP 1 Cust_id, Customer_Name, DaysTakenForDelivery max_delivery
@@ -124,28 +150,31 @@ FROM combined_table
 ORDER BY max_delivery DESC
 
 
+
+
+
 -- 5. Count the total number of unique customers in January and how many of them
 -- came back every month over the entire year in 2011
 
-WITH tbl AS (
-SELECT DISTINCT Cust_id, Order_Date
+
+SELECT MONTH(Order_Date) Order_month , COUNT(DISTINCT cust_id) MonthlyCustomerCounts
 FROM combined_table
-WHERE MONTH(Order_Date) = '01' 
-)
-SELECT COUNT(Cust_id) loyal_cust_count
-FROM tbl
-WHERE MONTH(Order_Date) IN 
-		YEAR(Order_Date) = 2011
+WHERE cust_id IN (SELECT DISTINCT cust_id 
+				  FROM combined_table
+				  WHERE YEAR(Order_Date) = 2011 AND MONTH(Order_Date) = 1) AND YEAR(Order_Date) = 2011
+GROUP BY MONTH(Order_Date)
+
+
 
 
 
 -- 6. Write a query to return for each user the time elapsed between the first 
 -- purchasing and the third purchasing, in ascending order by Customer ID.
 
-SELECT distinct Cust_id, Order_date, 
+SELECT distinct Cust_id, Customer_Name, Order_date, 
 		ROW_NUMBER() OVER(PARTITION BY Cust_id ORDER BY Order_date) row_numbers
 FROM combined_table
-ORDER  BY 1
+ORDER  BY 1, 2
 
 
 
@@ -187,6 +216,7 @@ GROUP BY Cust_id, prod_id
 ORDER BY 1
 
 
+
 WITH tbl AS(
 SELECT Cust_id, prod_id, SUM(Order_Quantity) total_product_amount
 FROM combined_table
@@ -213,7 +243,11 @@ FROM tbl2, tbl3
 WHERE tbl2.Cust_id = tbl3.Cust_id
 
 
----- Customer Segmentation
+
+
+
+
+----------------------- Customer Segmentation ----------------------------
 
 --- 1. Create a “view” that keeps visit logs of customers on a monthly basis. 
 -- (For each log, three field is kept: Cust_id, Year, Month)
