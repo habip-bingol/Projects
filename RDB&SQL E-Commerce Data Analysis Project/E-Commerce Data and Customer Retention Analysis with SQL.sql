@@ -1,5 +1,5 @@
 
--------------------------dsut_dimen -----------------------
+-------------------------cust_dimen -----------------------
 
 SELECT *
 FROM cust_dimen
@@ -110,7 +110,7 @@ ON m.Ship_id = s.Ship_id
 
 SELECT * 
 FROM combined_table
-
+order by 1
 
 
 
@@ -245,39 +245,41 @@ WHERE tbl2.Cust_id = tbl3.Cust_id
 
 
 
+---------------------------- Customer Segmentation ----------------------------
 
-
------------------------ Customer Segmentation ----------------------------
-
---- 1. Create a “view” that keeps visit logs of customers on a monthly basis. 
+--- 1. Create a "view" that keeps visit logs of customers on a monthly basis. 
 -- (For each log, three field is kept: Cust_id, Year, Month)
 
-CREATE VIEW VISIT_LOGS AS 
-SELECT DISTINCT Cust_id, YEAR(Order_Date) YEAR_, MONTH(Order_Date) MONTH_,
-		COUNT(Order_Date) OVER(PARTITION BY Cust_id, YEAR(Order_Date), MONTH(Order_Date) ) count_of_visit
+CREATE VIEW Visit_Log AS 
+SELECT DISTINCT Cust_id, 
+		YEAR(Order_Date) YEAR_, MONTH(Order_Date) MONTH_
 FROM combined_table
 
+
 SELECT * 
-FROM VISIT_LOGS
+FROM visit_Log
 ORDER BY 1
 
 
--- 2. Create a “view” that keeps the number of monthly visits by users. 
+
+
+
+
+
+-- 2. Create a "view" that keeps the number of monthly visits by users. 
 -- (Show separately all months from the beginning business)
 
-CREATE VIEW VISIT_LOGS_MONTHLY AS 
-SELECT DISTINCT Cust_id,  MONTH(Order_Date) MONTH_,
-		COUNT(Order_Date) OVER(PARTITION BY Cust_id, MONTH(Order_Date) ) count_of_visit
+CREATE VIEW Visit_Log_Monthly AS 
+SELECT DISTINCT Cust_id, YEAR(Order_Date) YEAR_, MONTH(Order_Date) MONTH_,
+		COUNT(Order_Date) OVER(PARTITION BY Cust_id, YEAR(Order_Date), MONTH(Order_Date) ) count_of_visit
 FROM combined_table
+ORDER BY 1
 
 SELECT * 
-FROM VISIT_LOGS_MONTHLY
-ORDER BY 1,2
+FROM Visit_Log_Monthly
+ORDER BY 1
 
------- OPTIONAL  
-SELECT DISTINCT Cust_id,  DATENAME (M, Order_Date) MONTH_,
-		COUNT(Order_Date) OVER(PARTITION BY Cust_id, MONTH(Order_Date) ) count_of_visit
-FROM combined_table
+
 
 
 
@@ -296,35 +298,11 @@ FROM tbl
 ORDER BY 1
 
 
-
-
------ buraya bakýlacak
-
-WITH tbl AS (
 SELECT DISTINCT  Cust_id, Order_Date, 
 		ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
 FROM combined_table
-), tbl2 AS (
-SELECT DISTINCT Cust_id, Order_Date, 
-		LEAD(Order_Date) OVER(PARTITION BY Cust_id ORDER BY Order_Date) next_visit
-FROM tbl
-)
-SELECT *
-INTO next_visit_tbl
-FROM tbl2
+order by Cust_id
 
-
-
-select *
-from next_visit_tbl
-order by 1
-
-SELECT distinct ct.*, nvt.next_visit
-INTO Combined_table_2
-FROM combined_table ct
-LEFT JOIN next_visit_tbl nvt
-ON ct.Cust_id = nvt.Cust_id
-ORDER BY Cust_id
 
 
 -- alternative
@@ -335,7 +313,7 @@ FROM (
 				ROW_NUMBER() over(PARTITION BY Cust_id ORDER BY Order_Date) Rows_
 		FROM combined_table
 		) A
-
+order by Cust_id
 
 
 -- 4. Calculate the monthly time gap between two consecutive visits by each  customer.
@@ -406,26 +384,34 @@ FROM loyalty_table
 SELECT *
 FROM Customer_Category
 
--- Month-Wise Retention Rate
--- Find month-by-month customer retention ratei since the start of the business.
 
 
 
--- We already created the table below in previous section 
+
+
+------------------------------ Month-Wise Retention Rate-----------------------------------
+
+-- Find month-by-month customer retention rate since the start of the business.
+
+
+-- 1. Find the number of customers retained month-wise. 
+
+-- We already created the next_visit_tbl table  in previous sections 
 select *
 from next_visit_tbl
 order by 1
 
-SELECT MONTH(Order_Date), COUNT(*)
+SELECT MONTH(Order_Date) MONTH_, COUNT(*) monthly_count_of_cust
 FROM next_visit_tbl
 GROUP BY MONTH(Order_Date)
 ORDER BY 1
 
 
-SELECT MONTH(next_visit), COUNT(*)
+SELECT MONTH(next_visit), COUNT(*) monthly_count_of_cust
 FROM next_visit_tbl
 GROUP BY MONTH(next_visit)
 ORDER BY 1
+
 
 SELECT *
 FROM Customer_Category
@@ -433,7 +419,7 @@ FROM Customer_Category
 
 --- We assumed that Loyal and Normal categories should be retained
 SELECT MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_retained_cust
-INTO retained_cust_table
+--INTO retained_cust_table
 FROM next_visit_tbl nvt, Customer_Category cc
 WHERE nvt.Cust_id = cc.Cust_id AND
 		(cc.Customer_category = 'Normal' OR  cc.Customer_category =  'Loyal')
@@ -442,7 +428,7 @@ ORDER BY 1
 
 
 SELECT MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_all_cust
-INTO all_customers
+--INTO all_customers
 FROM next_visit_tbl nvt, Customer_Category cc
 WHERE nvt.Cust_id = cc.Cust_id 	
 GROUP BY  MONTH(nvt.Order_Date)
@@ -453,4 +439,5 @@ SELECT r.*, a.month_wise_all_cust,
 		CAST((1.0*r.month_wise_retained_cust/a.month_wise_all_cust)  AS DECIMAL (10,2)) month_wise_retention_rate
 FROM retained_cust_table r, all_customers a
 WHERE r.MONTH_ = a.MONTH_
+ORDER BY 1
 
