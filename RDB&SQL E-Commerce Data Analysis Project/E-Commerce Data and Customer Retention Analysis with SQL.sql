@@ -399,17 +399,17 @@ FROM Customer_Category
 -- We already created the next_visit_tbl table  in previous sections 
 select *
 from next_visit_tbl
-order by 1
+order by 1,2
 
-SELECT MONTH(Order_Date) MONTH_, COUNT(*) monthly_count_of_cust
+SELECT YEAR(Order_Date) YEAR_, MONTH(Order_Date) MONTH_, COUNT(*) monthly_count_of_cust
 FROM next_visit_tbl
-GROUP BY MONTH(Order_Date)
-ORDER BY 1
+GROUP BY  YEAR(Order_Date), MONTH(Order_Date)
+ORDER BY 1,2
 
 
-SELECT MONTH(next_visit), COUNT(*) monthly_count_of_cust
+SELECT  YEAR(next_visit), MONTH(next_visit), COUNT(*) monthly_count_of_cust
 FROM next_visit_tbl
-GROUP BY MONTH(next_visit)
+GROUP BY YEAR(next_visit), MONTH(next_visit)
 ORDER BY 1
 
 
@@ -417,21 +417,21 @@ SELECT *
 FROM Customer_Category
 
 
---- We assumed that Loyal and Normal categories should be retained
-SELECT MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_retained_cust
---INTO retained_cust_table
+--- We assumed that Loyal  categorY should be retained
+SELECT YEAR(nvt.Order_Date) YEAR_, MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_retained_cust
+INTO retained_cust_table
 FROM next_visit_tbl nvt, Customer_Category cc
 WHERE nvt.Cust_id = cc.Cust_id AND
-		(cc.Customer_category = 'Normal' OR  cc.Customer_category =  'Loyal')
-GROUP BY  MONTH(nvt.Order_Date)
+		cc.Customer_category =  'Loyal'
+GROUP BY  YEAR(nvt.Order_Date), MONTH(nvt.Order_Date)
 ORDER BY 1
 
 
-SELECT MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_all_cust
---INTO all_customers
+SELECT YEAR(nvt.Order_Date) YEAR_, MONTH(nvt.Order_Date) MONTH_, COUNT(nvt.Cust_id) month_wise_all_cust
+INTO all_customers
 FROM next_visit_tbl nvt, Customer_Category cc
 WHERE nvt.Cust_id = cc.Cust_id 	
-GROUP BY  MONTH(nvt.Order_Date)
+GROUP BY  YEAR(nvt.Order_Date), MONTH(nvt.Order_Date)
 ORDER BY 1
 
 
@@ -440,4 +440,3 @@ SELECT r.*, a.month_wise_all_cust,
 FROM retained_cust_table r, all_customers a
 WHERE r.MONTH_ = a.MONTH_
 ORDER BY 1
-
