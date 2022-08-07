@@ -4,6 +4,7 @@
 <workbook locale='en_US' original-version='18.1' source-build='2022.2.0 (20222.22.0624.2136)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
   <document-format-change-manifest>
     <_.fcp.AnimationOnByDefault.true...AnimationOnByDefault />
+    <MapboxVectorStylesAndLayers />
     <_.fcp.MarkAnimation.true...MarkAnimation />
     <_.fcp.ObjectModelEncapsulateLegacy.true...ObjectModelEncapsulateLegacy />
     <_.fcp.ObjectModelExtractV2.true...ObjectModelExtractV2 />
@@ -24,15 +25,15 @@
   <datasources>
     <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
       <aliases enabled='yes' />
-      <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-        <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+      <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+        <calculation class='tableau' formula='&quot;New&quot;' />
         <members>
           <member value='&quot;New&quot;' />
           <member value='&quot;Cumulative&quot;' />
         </members>
       </column>
-      <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
-        <calculation class='tableau' formula='&quot;Deaths&quot;' />
+      <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
+        <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
         <members>
           <member value='&quot;Deaths&quot;' />
           <member value='&quot;Positive Cases&quot;' />
@@ -300,7 +301,37 @@
       <column caption='Difference in Cumulative or New Positive Cases Up' datatype='string' name='[Calculation_1780329287532498957]' role='measure' type='nominal'>
         <calculation class='tableau' formula='IF [Calculation_1780329287526436873]&gt;0 THEN &quot;▲&quot; END' />
       </column>
+      <column caption='Selected Metric' datatype='integer' name='[Calculation_2766617610564661256]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='IF [Parameters].[Parameter 1] = &quot;Cumulative&quot; and [Parameters].[Parameter 2] = &quot;Positive Cases&quot;&#13;&#10;THEN [people_positive_cases_count]&#13;&#10;ELSEIF [Parameters].[Parameter 1] = &quot;New&quot; and [Parameters].[Parameter 2] = &quot;Positive Cases&quot;&#13;&#10;THEN [people_positive_new_cases_count]&#13;&#10;ELSEIF [Parameters].[Parameter 1] = &quot;New&quot; and [Parameters].[Parameter 2] = &quot;Deaths&quot;&#13;&#10;THEN [people_death_new_count]&#13;&#10;ELSEIF [Parameters].[Parameter 1] = &quot;Cumulative&quot; and [Parameters].[Parameter 2] = &quot;Deaths&quot;&#13;&#10;THEN [people_death_count]&#13;&#10;END' />
+      </column>
+      <column caption='Selected Metric Header' datatype='string' name='[Calculation_2766617610564829193]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='[Parameters].[Parameter 1] + &quot; &quot; + [Parameters].[Parameter 2]' />
+      </column>
+      <column caption='Current Day Cumulative or New Deaths' datatype='integer' name='[Current Day Cumulative or New Positive Cases (copy)_2766617610543104001]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='IF [Calculation_1780329287522455556] THEN [Total or New Positive Cases (copy)_2766617610542690304] END' />
+      </column>
+      <column caption='Difference in Cumulative or New Deaths Down' datatype='string' name='[Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925]' role='measure' type='nominal'>
+        <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]&lt;0 THEN &quot;▼&quot; END' />
+      </column>
+      <column caption='Difference in Cumulative or New Deaths Same' datatype='string' name='[Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686]' role='measure' type='nominal'>
+        <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]=0 THEN &quot;●&quot; END' />
+      </column>
+      <column caption='Difference in Cumulative or New  Deaths Up ' datatype='string' name='[Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087]' role='measure' type='nominal'>
+        <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]&gt;0 THEN &quot;▲&quot; END' />
+      </column>
+      <column caption='Difference in Cumulative or New Deaths to Previous Day % ' datatype='real' name='[Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='[Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331] / SUM([Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178])' />
+      </column>
+      <column caption='Difference in Cumulative or New to Previous Day Deaths' datatype='integer' name='[Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='SUM([Current Day Cumulative or New Positive Cases (copy)_2766617610543104001])-SUM([Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178])' />
+      </column>
       <column caption='Measure Values' datatype='real' name='[Multiple Values]' role='measure' type='quantitative' />
+      <column caption='Previous Day Cumulative or New Deaths' datatype='integer' name='[Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='IF Datediff(&apos;day&apos;,[report_date],[Calculation_1780329287510560769]) =1 THEN [Total or New Positive Cases (copy)_2766617610542690304] END' />
+      </column>
+      <column caption='Total or New Deaths' datatype='integer' name='[Total or New Positive Cases (copy)_2766617610542690304]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='IF [Parameters].[Parameter 1] = &quot;New&quot; THEN [people_death_new_count]&#13;&#10;ELSE [people_death_count] END' />
+      </column>
       <_.fcp.ObjectModelTableType.true...column caption='Query Results' datatype='table' name='[__tableau_internal_object_id__].[QueryTable_F6BB1D0B12154CEFB7270AAF7438AD7B]' role='measure' type='quantitative' />
       <column datatype='string' name='[country_alpha_2_code]' role='dimension' semantic-role='[Country].[ISO3166_2]' type='nominal' />
       <column datatype='string' name='[country_alpha_3_code]' role='dimension' semantic-role='[Country].[ISO3166_2]' type='nominal' />
@@ -498,8 +529,11 @@
       </semantic-values>
       <date-options start-of-week='monday' />
       <datasource-dependencies datasource='Parameters'>
-        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-          <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+          <calculation class='tableau' formula='&quot;New&quot;' />
+        </column>
+        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
+          <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
         </column>
       </datasource-dependencies>
       <_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
@@ -516,6 +550,9 @@
       </_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
     </datasource>
   </datasources>
+  <mapsources>
+    <mapsource name='Tableau' />
+  </mapsources>
   <shared-views>
     <shared-view name='federated.12hfbed0xv55i819g84tk121z9j3'>
       <datasources>
@@ -533,6 +570,255 @@
     </shared-view>
   </shared-views>
   <worksheets>
+    <worksheet name='Global Deaths BAN'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='covid-19-data-resource-hub/covid-19-case-counts' name='federated.12hfbed0xv55i819g84tk121z9j3' />
+            <datasource name='Parameters' />
+          </datasources>
+          <datasource-dependencies datasource='Parameters'>
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
+            </column>
+          </datasource-dependencies>
+          <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
+            <column caption='Max_Date' datatype='date' name='[Calculation_1780329287510560769]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='{MAX([report_date])}' />
+            </column>
+            <column caption='Max Date for _US' datatype='date' name='[Calculation_1780329287518892034]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='{&#13;&#10;MAX(IF [country_short_name]= &quot;United States&quot; THEN [report_date] END)&#13;&#10;}' />
+            </column>
+            <column caption='Date is Less Than or Equal to US Date' datatype='boolean' name='[Calculation_1780329287519485955]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='[report_date] &lt;= [Calculation_1780329287518892034]&#13;&#10;&#13;&#10;// The US data is one day behing the Globdl data as they come&#13;&#10;//from two different sources.&#13;&#10;//This filter ensures we are reporting based on the Max US date' />
+            </column>
+            <column caption='Date is Max' datatype='boolean' name='[Calculation_1780329287522455556]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='[Calculation_1780329287510560769] = [report_date]&#13;&#10;&#13;&#10;&#13;&#10;//Used to report on the latest day of data. Use when using&#13;&#10;//Cumulative numbers to only show the most recent' />
+            </column>
+            <column caption='Current Day Cumulative or New Deaths' datatype='integer' name='[Current Day Cumulative or New Positive Cases (copy)_2766617610543104001]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='IF [Calculation_1780329287522455556] THEN [Total or New Positive Cases (copy)_2766617610542690304] END' />
+            </column>
+            <column caption='Difference in Cumulative or New Deaths Down' datatype='string' name='[Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925]' role='measure' type='nominal'>
+              <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]&lt;0 THEN &quot;▼&quot; END' />
+            </column>
+            <column caption='Difference in Cumulative or New Deaths Same' datatype='string' name='[Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686]' role='measure' type='nominal'>
+              <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]=0 THEN &quot;●&quot; END' />
+            </column>
+            <column caption='Difference in Cumulative or New  Deaths Up ' datatype='string' name='[Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087]' role='measure' type='nominal'>
+              <calculation class='tableau' formula='IF [Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]&gt;0 THEN &quot;▲&quot; END' />
+            </column>
+            <column caption='Difference in Cumulative or New Deaths to Previous Day % ' datatype='real' name='[Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='[Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331] / SUM([Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178])' />
+            </column>
+            <column caption='Difference in Cumulative or New to Previous Day Deaths' datatype='integer' name='[Difference in Cumulative or New to Previous Day Positive Cases (copy)_2766617610544099331]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([Current Day Cumulative or New Positive Cases (copy)_2766617610543104001])-SUM([Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178])' />
+            </column>
+            <column caption='Previous Day Cumulative or New Deaths' datatype='integer' name='[Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='IF Datediff(&apos;day&apos;,[report_date],[Calculation_1780329287510560769]) =1 THEN [Total or New Positive Cases (copy)_2766617610542690304] END' />
+            </column>
+            <column caption='Total or New Deaths' datatype='integer' name='[Total or New Positive Cases (copy)_2766617610542690304]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='IF [Parameters].[Parameter 1] = &quot;New&quot; THEN [people_death_new_count]&#13;&#10;ELSE [people_death_count] END' />
+            </column>
+            <column datatype='string' name='[country_short_name]' role='dimension' semantic-role='[Country].[ISO3166_2]' type='nominal' />
+            <column-instance column='[Calculation_1780329287519485955]' derivation='None' name='[none:Calculation_1780329287519485955:nk]' pivot='key' type='nominal' />
+            <column datatype='integer' name='[people_death_count]' role='measure' type='quantitative' />
+            <column datatype='integer' name='[people_death_new_count]' role='measure' type='quantitative' />
+            <column datatype='date' name='[report_date]' role='dimension' type='ordinal' />
+            <column-instance column='[Current Day Cumulative or New Positive Cases (copy)_2766617610543104001]' derivation='Sum' name='[sum:Current Day Cumulative or New Positive Cases (copy)_2766617610543104001:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178]' derivation='Sum' name='[sum:Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380:qk]' pivot='key' type='quantitative' />
+          </datasource-dependencies>
+          <slices>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380:qk]' value='p0.0%' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Current Day Cumulative or New Positive Cases (copy)_2766617610543104001:qk]' />
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087:nk]' />
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925:nk]' />
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686:nk]' />
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380:qk]' />
+              <text column='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178:qk]' />
+              <text column='[Parameters].[Parameter 1]' />
+            </encodings>
+            <customized-label>
+              <formatted-text>
+                <run fontsize='14'><![CDATA[<[Parameters].[Parameter 1]> Deaths]]></run>
+                <run>Æ&#10;</run>
+                <run bold='true' fontsize='20'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Current Day Cumulative or New Positive Cases (copy)_2766617610543104001:qk]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#5ba051'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Down (copy)_2766617610545233925:nk]>]]></run>
+                <run><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Same (copy)_2766617610545479686:nk]>]]></run>
+                <run fontcolor='#ff0000'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087:nk]>]]></run>
+                <run><![CDATA[  <[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380:qk]> vs previous day
+<[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Previous Day Cumulative or New Positive Cases (copy)_2766617610543538178:qk]>]]></run>
+              </formatted-text>
+            </customized-label>
+            <style>
+              <style-rule element='cell'>
+                <format attr='text-align' value='center' />
+                <format attr='vertical-align' value='center' />
+              </style-rule>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows />
+        <cols />
+      </table>
+      <simple-id uuid='{EAFFFFB6-C68B-405A-B08C-B54C678FC6D1}' />
+    </worksheet>
+    <worksheet name='Global Deaths Over Time'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='covid-19-data-resource-hub/covid-19-case-counts' name='federated.12hfbed0xv55i819g84tk121z9j3' />
+            <datasource name='Parameters' />
+          </datasources>
+          <datasource-dependencies datasource='Parameters'>
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
+            </column>
+          </datasource-dependencies>
+          <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
+            <column caption='Max Date for _US' datatype='date' name='[Calculation_1780329287518892034]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='{&#13;&#10;MAX(IF [country_short_name]= &quot;United States&quot; THEN [report_date] END)&#13;&#10;}' />
+            </column>
+            <column caption='Date is Less Than or Equal to US Date' datatype='boolean' name='[Calculation_1780329287519485955]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='[report_date] &lt;= [Calculation_1780329287518892034]&#13;&#10;&#13;&#10;// The US data is one day behing the Globdl data as they come&#13;&#10;//from two different sources.&#13;&#10;//This filter ensures we are reporting based on the Max US date' />
+            </column>
+            <column caption='Total or New Deaths' datatype='integer' name='[Total or New Positive Cases (copy)_2766617610542690304]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='IF [Parameters].[Parameter 1] = &quot;New&quot; THEN [people_death_new_count]&#13;&#10;ELSE [people_death_count] END' />
+            </column>
+            <column datatype='string' name='[country_short_name]' role='dimension' semantic-role='[Country].[ISO3166_2]' type='nominal' />
+            <column-instance column='[Calculation_1780329287519485955]' derivation='None' name='[none:Calculation_1780329287519485955:nk]' pivot='key' type='nominal' />
+            <column datatype='integer' name='[people_death_count]' role='measure' type='quantitative' />
+            <column datatype='integer' name='[people_death_new_count]' role='measure' type='quantitative' />
+            <column datatype='date' name='[report_date]' role='dimension' type='ordinal' />
+            <column-instance column='[Total or New Positive Cases (copy)_2766617610542690304]' derivation='Sum' name='[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[report_date]' derivation='Day-Trunc' name='[tdy:report_date:qk]' pivot='key' type='quantitative' />
+          </datasource-dependencies>
+          <slices>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <encoding attr='space' class='1' field='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]' field-type='quantitative' fold='true' scope='rows' synchronized='true' type='space' />
+            <format attr='display' class='1' field='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]' scope='rows' value='false' />
+            <format attr='title' class='0' field='[federated.12hfbed0xv55i819g84tk121z9j3].[tdy:report_date:qk]' scope='cols' value='' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane id='1' selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Area' />
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-color' value='#5bd1f1' />
+              </style-rule>
+            </style>
+          </pane>
+          <pane id='2' selection-relaxation-option='selection-relaxation-allow' y-axis-name='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Area' />
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-color' value='#5bd1f1' />
+                <format attr='mark-transparency' value='139' />
+              </style-rule>
+            </style>
+          </pane>
+          <pane id='3' selection-relaxation-option='selection-relaxation-allow' y-axis-name='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]' y-index='1'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Line' />
+            <mark-sizing mark-sizing-setting='marks-scaling-off' />
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-color' value='#5bd1f1' />
+                <format attr='mark-markers-mode' value='auto' />
+                <format attr='size' value='1.5492265224456787' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>([federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk] + [federated.12hfbed0xv55i819g84tk121z9j3].[sum:Total or New Positive Cases (copy)_2766617610542690304:qk])</rows>
+        <cols>[federated.12hfbed0xv55i819g84tk121z9j3].[tdy:report_date:qk]</cols>
+      </table>
+      <simple-id uuid='{DA59AD7D-FE9E-4273-9811-6D808E8B87E3}' />
+    </worksheet>
+    <worksheet name='Global Map'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='covid-19-data-resource-hub/covid-19-case-counts' name='federated.12hfbed0xv55i819g84tk121z9j3' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
+            <column caption='Max Date for _US' datatype='date' name='[Calculation_1780329287518892034]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='{&#13;&#10;MAX(IF [country_short_name]= &quot;United States&quot; THEN [report_date] END)&#13;&#10;}' />
+            </column>
+            <column caption='Date is Less Than or Equal to US Date' datatype='boolean' name='[Calculation_1780329287519485955]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='[report_date] &lt;= [Calculation_1780329287518892034]&#13;&#10;&#13;&#10;// The US data is one day behing the Globdl data as they come&#13;&#10;//from two different sources.&#13;&#10;//This filter ensures we are reporting based on the Max US date' />
+            </column>
+            <column datatype='string' name='[country_short_name]' role='dimension' semantic-role='[Country].[ISO3166_2]' type='nominal' />
+            <column-instance column='[Calculation_1780329287519485955]' derivation='None' name='[none:Calculation_1780329287519485955:nk]' pivot='key' type='nominal' />
+            <column-instance column='[country_short_name]' derivation='None' name='[none:country_short_name:nk]' pivot='key' type='nominal' />
+            <column datatype='date' name='[report_date]' role='dimension' type='ordinal' />
+          </datasource-dependencies>
+          <slices>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <lod column='[federated.12hfbed0xv55i819g84tk121z9j3].[none:country_short_name:nk]' />
+            </encodings>
+          </pane>
+        </panes>
+        <rows>[federated.12hfbed0xv55i819g84tk121z9j3].[Latitude (generated)]</rows>
+        <cols>[federated.12hfbed0xv55i819g84tk121z9j3].[Longitude (generated)]</cols>
+      </table>
+      <simple-id uuid='{58B85984-DE24-42D9-BF3D-8EB9D0E74D0C}' />
+    </worksheet>
     <worksheet name='Global Positive BAN'>
       <table>
         <view>
@@ -541,8 +827,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -623,7 +909,7 @@
               <formatted-text>
                 <run fontname='Tableau Medium' fontsize='14'><![CDATA[<[Parameters].[Parameter 1]> Positive Cases]]></run>
                 <run>Æ&#10;</run>
-                <run fontname='Tableau Medium' fontsize='20'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Calculation_1780329287524732934:qk]>]]></run>
+                <run bold='true' fontname='Tableau Medium' fontsize='20'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Calculation_1780329287524732934:qk]>]]></run>
                 <run>Æ&#10;</run>
                 <run fontcolor='#5ba051' fontname='Tableau Medium'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Calculation_1780329287532216331:nk]>]]></run>
                 <run fontname='Tableau Medium'><![CDATA[<[federated.12hfbed0xv55i819g84tk121z9j3].[usr:Calculation_1780329287532433420:nk]>]]></run>
@@ -659,8 +945,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -860,7 +1146,35 @@
       </viewpoint>
       <simple-id uuid='{92325A3E-4F5B-46C8-B008-66E9BDBE3592}' />
     </window>
-    <window class='worksheet' maximized='true' name='Global Positive Over Time'>
+    <window class='worksheet' name='Global Positive Over Time'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='31'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card mode='compact' param='[Parameters].[Parameter 1]' type='parameter' />
+          </strip>
+        </edge>
+      </cards>
+      <simple-id uuid='{594BCBA6-7505-468A-9512-840E4CAD3477}' />
+    </window>
+    <window class='worksheet' name='Global Deaths BAN'>
       <cards>
         <edge name='left'>
           <strip size='160'>
@@ -887,7 +1201,61 @@
           </strip>
         </edge>
       </cards>
-      <simple-id uuid='{594BCBA6-7505-468A-9512-840E4CAD3477}' />
+      <viewpoint>
+        <zoom type='entire-view' />
+      </viewpoint>
+      <simple-id uuid='{021BA943-1C85-4E92-9F11-BAFC1F7878CB}' />
+    </window>
+    <window class='worksheet' name='Global Deaths Over Time'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='31'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card mode='compact' param='[Parameters].[Parameter 1]' type='parameter' />
+          </strip>
+        </edge>
+      </cards>
+      <simple-id uuid='{F5054233-E2D7-4F9D-ADB2-B1D350234D6D}' />
+    </window>
+    <window class='worksheet' maximized='true' name='Global Map'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='31'>
+            <card type='title' />
+          </strip>
+        </edge>
+      </cards>
+      <simple-id uuid='{65307AFD-7D71-4CA0-B0FC-14D979A3E5D4}' />
     </window>
   </windows>
 </workbook>
