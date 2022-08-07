@@ -8,6 +8,7 @@
     <AutoCreateAndUpdateDSDPhoneLayouts />
     <BasicButtonObject />
     <BasicButtonObjectTextSupport />
+    <CollapsiblePane />
     <IntuitiveSorting />
     <IntuitiveSorting_SP2 />
     <MapboxVectorStylesAndLayers />
@@ -19,7 +20,9 @@
     <SetMembershipControl />
     <SheetIdentifierTracking />
     <WindowsPersistSimpleIdentifiers />
+    <WorksheetBackgroundTransparency />
     <ZoneBackgroundTransparency />
+    <ZoneVisibilityControl />
   </document-format-change-manifest>
   <preferences>
     <preference name='ui.encoding.shelf.height' value='24' />
@@ -33,15 +36,15 @@
   <datasources>
     <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
       <aliases enabled='yes' />
-      <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-        <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+      <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+        <calculation class='tableau' formula='&quot;New&quot;' />
         <members>
           <member value='&quot;New&quot;' />
           <member value='&quot;Cumulative&quot;' />
         </members>
       </column>
-      <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
-        <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
+      <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+        <calculation class='tableau' formula='&quot;Deaths&quot;' />
         <members>
           <member value='&quot;Deaths&quot;' />
           <member value='&quot;Positive Cases&quot;' />
@@ -347,6 +350,11 @@
       <column datatype='integer' name='[county_fips_number]' role='dimension' type='ordinal' />
       <column datatype='string' name='[county_name]' role='dimension' semantic-role='[County].[Name]' type='nominal' />
       <column datatype='string' name='[province_state_name]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
+      <group caption='Action (country_short_name)' hidden='true' name='[Action (country_short_name)]' name-style='unqualified' user:auto-column='sheet_link'>
+        <groupfilter function='crossjoin'>
+          <groupfilter function='level-members' level='[country_short_name]' />
+        </groupfilter>
+      </group>
       <extract _.fcp.ObjectModelExtractV2.true...object-id='' count='-1' enabled='true' units='records'>
         <connection access_mode='readonly' authentication='auth-none' author-locale='en_US' class='hyper' dbname='Data/Datasources/federated.12hfbed0xv55i819g84tk121z9j3_0bcan1j1mos3xb1fanbc21v0hmx3.hyper' default-settings='yes' schema='Extract' sslmode='' tablename='Extract' update-time='' username='tableau_internal_user'>
           <_.fcp.ObjectModelEncapsulateLegacy.false...relation name='Extract' table='[Extract].[Extract]' type='table' />
@@ -537,11 +545,11 @@
       </semantic-values>
       <date-options start-of-week='monday' />
       <datasource-dependencies datasource='Parameters'>
-        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-          <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+          <calculation class='tableau' formula='&quot;New&quot;' />
         </column>
-        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
-          <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
+        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+          <calculation class='tableau' formula='&quot;Deaths&quot;' />
         </column>
       </datasource-dependencies>
       <_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
@@ -577,6 +585,38 @@
       </filter>
     </shared-view>
   </shared-views>
+  <actions>
+    <action caption='Filter1' name='[Action1_9A30C69188C4471899747660CD33B2D3]'>
+      <activation auto-clear='true' type='on-select' />
+      <source dashboard='With Container' type='sheet'>
+        <exclude-sheet name='Global Positive BAN' />
+        <exclude-sheet name='Global Deaths BAN' />
+        <exclude-sheet name='Global Title' />
+        <exclude-sheet name='Global Deaths Over Time' />
+        <exclude-sheet name='Global Positive Over Time' />
+      </source>
+      <command command='tsc:tsl-filter'>
+        <param name='exclude' value='Global Bar,Global Map,Global Title' />
+        <param name='special-fields' value='all' />
+        <param name='target' value='With Container' />
+      </command>
+    </action>
+    <action caption='Highlight1' name='[Action2_9A16086D5A8F4204ABF46CEC25B06944]'>
+      <activation auto-clear='true' type='on-select' />
+      <source dashboard='Without Container' type='sheet'>
+        <exclude-sheet name='Global Positive BAN' />
+        <exclude-sheet name='Global Deaths BAN' />
+        <exclude-sheet name='Global Title' />
+        <exclude-sheet name='Global Deaths Over Time' />
+        <exclude-sheet name='Global Positive Over Time' />
+      </source>
+      <command command='tsc:brush'>
+        <param name='exclude' value='Global Positive BAN,Global Deaths BAN,Global Title,Global Deaths Over Time,Global Positive Over Time' />
+        <param name='special-fields' value='all' />
+        <param name='target' value='Without Container' />
+      </command>
+    </action>
+  </actions>
   <worksheets>
     <worksheet name='Global Bar'>
       <layout-options>
@@ -598,11 +638,11 @@
             <mapsource name='Tableau' />
           </mapsources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
-            <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
-              <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
+            <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+              <calculation class='tableau' formula='&quot;Deaths&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -707,8 +747,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -760,8 +800,12 @@
             <column-instance column='[Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases Up (copy)_2766617610545582087:nk]' pivot='key' type='nominal' />
             <column-instance column='[Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380]' derivation='User' name='[usr:Difference in Cumulative or New Positive Cases to Previous Day % (copy)_2766617610544357380:qk]' pivot='key' type='quantitative' />
           </datasource-dependencies>
+          <filter class='categorical' column='[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]'>
+            <groupfilter function='level-members' level='[country_short_name]' user:ui-action-filter='[Action1_9A30C69188C4471899747660CD33B2D3]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
           <slices>
             <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]</column>
           </slices>
           <aggregation value='true' />
         </view>
@@ -823,8 +867,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -845,8 +889,12 @@
             <column-instance column='[Total or New Positive Cases (copy)_2766617610542690304]' derivation='Sum' name='[sum:Total or New Positive Cases (copy)_2766617610542690304:qk]' pivot='key' type='quantitative' />
             <column-instance column='[report_date]' derivation='Day-Trunc' name='[tdy:report_date:qk]' pivot='key' type='quantitative' />
           </datasource-dependencies>
+          <filter class='categorical' column='[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]'>
+            <groupfilter function='level-members' level='[country_short_name]' user:ui-action-filter='[Action1_9A30C69188C4471899747660CD33B2D3]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
           <slices>
             <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]</column>
           </slices>
           <aggregation value='true' />
         </view>
@@ -921,11 +969,11 @@
             <mapsource name='Tableau' />
           </mapsources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
-            <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
-              <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
+            <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+              <calculation class='tableau' formula='&quot;Deaths&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -970,6 +1018,10 @@
           <aggregation value='true' />
         </view>
         <style>
+          <style-rule element='axis'>
+            <encoding attr='space' class='0' field='[federated.12hfbed0xv55i819g84tk121z9j3].[Longitude (generated)]' field-type='quantitative' max='11701933.230981082' min='-314539.66498413915' projection='EPSG:3857' range-type='fixed' scope='cols' type='space' />
+            <encoding attr='space' class='0' field='[federated.12hfbed0xv55i819g84tk121z9j3].[Latitude (generated)]' field-type='quantitative' max='11303367.914286876' min='-1354259.3926533954' projection='EPSG:3857' range-type='fixed' scope='rows' type='space' />
+          </style-rule>
           <style-rule element='table'>
             <format attr='show-null-value-warning' value='false' />
           </style-rule>
@@ -983,6 +1035,7 @@
               <breakdown value='auto' />
             </view>
             <mark class='Automatic' />
+            <mark-sizing mark-sizing-setting='marks-scaling-off' />
             <encodings>
               <size column='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Calculation_2766617610564661256:qk]' />
               <lod column='[federated.12hfbed0xv55i819g84tk121z9j3].[none:country_short_name:nk]' />
@@ -1001,8 +1054,9 @@
             </customized-tooltip>
             <style>
               <style-rule element='mark'>
-                <format attr='mark-color' value='#50bad4' />
-                <format attr='mark-transparency' value='255' />
+                <format attr='mark-color' value='#00aff4' />
+                <format attr='size' value='2' />
+                <format attr='mark-transparency' value='167' />
               </style-rule>
             </style>
           </pane>
@@ -1020,8 +1074,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -1073,8 +1127,12 @@
             <column-instance column='[Calculation_1780329287532433420]' derivation='User' name='[usr:Calculation_1780329287532433420:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_1780329287532498957]' derivation='User' name='[usr:Calculation_1780329287532498957:nk]' pivot='key' type='nominal' />
           </datasource-dependencies>
+          <filter class='categorical' column='[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]'>
+            <groupfilter function='level-members' level='[country_short_name]' user:ui-action-filter='[Action1_9A30C69188C4471899747660CD33B2D3]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
           <slices>
             <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]</column>
           </slices>
           <aggregation value='true' />
         </view>
@@ -1138,8 +1196,8 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-              <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+            <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+              <calculation class='tableau' formula='&quot;New&quot;' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.12hfbed0xv55i819g84tk121z9j3'>
@@ -1160,8 +1218,12 @@
             <column-instance column='[Calculation_1780329287523926021]' derivation='Sum' name='[sum:Calculation_1780329287523926021:qk]' pivot='key' type='quantitative' />
             <column-instance column='[report_date]' derivation='Day-Trunc' name='[tdy:report_date:qk]' pivot='key' type='quantitative' />
           </datasource-dependencies>
+          <filter class='categorical' column='[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]'>
+            <groupfilter function='level-members' level='[country_short_name]' user:ui-action-filter='[Action1_9A30C69188C4471899747660CD33B2D3]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
           <slices>
             <column>[federated.12hfbed0xv55i819g84tk121z9j3].[none:Calculation_1780329287519485955:nk]</column>
+            <column>[federated.12hfbed0xv55i819g84tk121z9j3].[Action (country_short_name)]</column>
           </slices>
           <aggregation value='true' />
         </view>
@@ -1170,6 +1232,7 @@
             <encoding attr='space' class='1' field='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Calculation_1780329287523926021:qk]' field-type='quantitative' fold='true' scope='rows' synchronized='true' type='space' />
             <format attr='display' class='1' field='[federated.12hfbed0xv55i819g84tk121z9j3].[sum:Calculation_1780329287523926021:qk]' scope='rows' value='false' />
             <format attr='title' class='0' field='[federated.12hfbed0xv55i819g84tk121z9j3].[tdy:report_date:qk]' scope='cols' value='' />
+            <format attr='height' field='[federated.12hfbed0xv55i819g84tk121z9j3].[tdy:report_date:qk]' value='55' />
           </style-rule>
         </style>
         <panes>
@@ -1286,8 +1349,229 @@
   <dashboards>
     <dashboard _.fcp.AccessibleZoneTabOrder.true...enable-sort-zone-taborder='true' name='With Container'>
       <style />
-      <size maxheight='800' maxwidth='1000' minheight='800' minwidth='1000' />
-      <zones />
+      <size sizing-mode='automatic' />
+      <datasources>
+        <datasource name='Parameters' />
+      </datasources>
+      <datasource-dependencies datasource='Parameters'>
+        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+          <calculation class='tableau' formula='&quot;New&quot;' />
+          <members>
+            <member value='&quot;New&quot;' />
+            <member value='&quot;Cumulative&quot;' />
+          </members>
+        </column>
+        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+          <calculation class='tableau' formula='&quot;Deaths&quot;' />
+          <members>
+            <member value='&quot;Deaths&quot;' />
+            <member value='&quot;Positive Cases&quot;' />
+          </members>
+        </column>
+      </datasource-dependencies>
+      <zones>
+        <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
+          <zone h='9776' id='26' is-fixed='true' type-v2='layout-basic' w='100000' x='0' y='0'>
+            <zone h='9776' id='3' param='horz' type-v2='layout-flow' w='79105' x='0' y='0'>
+              <zone fixed-size='1239' h='9776' id='7' is-fixed='true' name='Global Title' show-title='false' w='79105' x='0' y='0'>
+                <layout-cache type-h='cell' type-w='cell' />
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='background-color' value='#031a35' />
+              </zone-style>
+            </zone>
+            <zone h='9776' id='27' param='horz' type-v2='layout-flow' w='20895' x='79105' y='0'>
+              <zone h='9776' id='19' layout-strategy-id='distribute-evenly' param='horz' type-v2='layout-flow' w='20895' x='79105' y='0'>
+                <zone h='9829' id='22' layout-strategy-id='distribute-evenly' param='vert' type-v2='layout-flow' w='10436' x='79129' y='0'>
+                  <zone h='4914' id='20' type-v2='dashboard-object' w='10436' x='79129' y='0'>
+                    <button action='tabdoc:goto-sheet window-id=&quot;{4EFCD0AC-7CDE-4449-84FC-CFF57C4BD62F}&quot;'>
+                      <button-visual-state>
+                        <image-path>Image/World map B (1).png</image-path>
+                        <format attr='background-color' value='#031a35' />
+                      </button-visual-state>
+                    </button>
+                    <zone-style>
+                      <format attr='border-color' value='#000000' />
+                      <format attr='border-style' value='none' />
+                      <format attr='border-width' value='0' />
+                      <format attr='margin' value='4' />
+                    </zone-style>
+                  </zone>
+                  <zone h='4915' id='23' type-v2='dashboard-object' w='10436' x='79129' y='4914'>
+                    <button action='tabdoc:goto-sheet window-id=&quot;{4EFCD0AC-7CDE-4449-84FC-CFF57C4BD62F}&quot;' button-type='text'>
+                      <button-visual-state>
+                        <caption>Global</caption>
+                        <button-caption-font-style fontcolor='#ffffff' fontname='Tableau Bold' fontsize='12' />
+                        <format attr='background-color' value='#031a35' />
+                      </button-visual-state>
+                    </button>
+                    <zone-style>
+                      <format attr='border-color' value='#000000' />
+                      <format attr='border-style' value='none' />
+                      <format attr='border-width' value='0' />
+                      <format attr='margin' value='4' />
+                    </zone-style>
+                  </zone>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='background-color' value='#031a35' />
+                  </zone-style>
+                </zone>
+                <zone h='9829' id='24' layout-strategy-id='distribute-evenly' param='vert' type-v2='layout-flow' w='10435' x='89565' y='0'>
+                  <zone h='4914' id='21' type-v2='dashboard-object' w='10435' x='89565' y='0'>
+                    <button action='tabdoc:goto-sheet window-id=&quot;{513ED130-7ECC-4186-81A5-3112586859C6}&quot;'>
+                      <button-visual-state>
+                        <image-path>Image/US B (1).png</image-path>
+                        <format attr='background-color' value='#031a35' />
+                      </button-visual-state>
+                    </button>
+                    <zone-style>
+                      <format attr='border-color' value='#000000' />
+                      <format attr='border-style' value='none' />
+                      <format attr='border-width' value='0' />
+                      <format attr='margin' value='4' />
+                    </zone-style>
+                  </zone>
+                  <zone h='4915' id='25' type-v2='dashboard-object' w='10435' x='89565' y='4914'>
+                    <button action='tabdoc:goto-sheet window-id=&quot;{513ED130-7ECC-4186-81A5-3112586859C6}&quot;' button-type='text'>
+                      <button-visual-state>
+                        <caption>United States</caption>
+                        <button-caption-font-style fontcolor='#ffffff' fontname='Tableau Bold' fontsize='12' />
+                        <format attr='background-color' value='#031a35' />
+                      </button-visual-state>
+                    </button>
+                    <zone-style>
+                      <format attr='border-color' value='#000000' />
+                      <format attr='border-style' value='none' />
+                      <format attr='border-width' value='0' />
+                      <format attr='margin' value='4' />
+                    </zone-style>
+                  </zone>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='background-color' value='#031a35' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+          </zone>
+          <zone h='6567' id='5' param='horz' type-v2='layout-flow' w='100000' x='0' y='9776'>
+            <zone h='6567' id='17' type-v2='empty' w='20903' x='0' y='9776'>
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+            <zone h='6567' id='9' mode='compact' param='[Parameters].[Parameter 1]' type-v2='paramctrl' w='29097' x='20903' y='9776'>
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+            <zone h='6567' id='10' mode='compact' param='[Parameters].[Parameter 2]' type-v2='paramctrl' w='29097' x='50000' y='9776'>
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+            <zone h='6567' id='18' type-v2='empty' w='20903' x='79097' y='9776'>
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+          </zone>
+          <zone h='83657' id='6' param='horz' type-v2='layout-flow' w='100000' x='0' y='16343'>
+            <zone fixed-size='382' h='83657' id='12' is-fixed='true' param='vert' type-v2='layout-flow' w='24456' x='0' y='16343'>
+              <zone h='40800' id='28' layout-strategy-id='distribute-evenly' param='vert' type-v2='layout-flow' w='24456' x='0' y='16343'>
+                <zone fixed-size='150' h='20457' id='13' is-fixed='true' name='Global Positive BAN' show-title='false' w='24456' x='0' y='16343'>
+                  <layout-cache cell-count-w='1' type-h='cell' type-w='cell' />
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone fixed-size='191' h='20343' id='14' is-fixed='true' name='Global Positive Over Time' show-title='false' w='24456' x='0' y='36800'>
+                  <layout-cache minheight='156' minwidth='183' type-h='scalable' type-w='scalable' />
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+              <zone h='42857' id='29' layout-strategy-id='distribute-evenly' param='vert' type-v2='layout-flow' w='24456' x='0' y='57143'>
+                <zone fixed-size='153' h='21486' id='15' is-fixed='true' name='Global Deaths BAN' show-title='false' w='24456' x='0' y='57143'>
+                  <layout-cache cell-count-w='1' type-h='cell' type-w='cell' />
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone h='21371' id='16' name='Global Deaths Over Time' show-title='false' w='24456' x='0' y='78629'>
+                  <layout-cache minheight='131' minwidth='165' type-h='scalable' type-w='scalable' />
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+            <zone fixed-size='562' h='83657' id='11' is-fixed='true' name='Global Map' w='36492' x='24456' y='16343'>
+              <layout-cache minwidth='202' type-h='fixed' type-w='scalable' />
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+            <zone h='83657' id='8' name='Global Bar' w='39052' x='60948' y='16343'>
+              <layout-cache minwidth='260' type-h='fixed' type-w='scalable' />
+              <zone-style>
+                <format attr='border-color' value='#000000' />
+                <format attr='border-style' value='none' />
+                <format attr='border-width' value='0' />
+                <format attr='margin' value='4' />
+              </zone-style>
+            </zone>
+          </zone>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='none' />
+            <format attr='border-width' value='0' />
+            <format attr='margin' value='0' />
+          </zone-style>
+        </zone>
+      </zones>
       <devicelayouts>
         <devicelayout auto-generated='true' name='Phone'>
           <size maxheight='700' minheight='700' sizing-mode='vscroll' />
@@ -1313,15 +1597,15 @@
         <datasource name='Parameters' />
       </datasources>
       <datasource-dependencies datasource='Parameters'>
-        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;Cumulative&quot;'>
-          <calculation class='tableau' formula='&quot;Cumulative&quot;' />
+        <column caption='Cumulative or New' datatype='string' name='[Parameter 1]' param-domain-type='list' role='measure' type='nominal' value='&quot;New&quot;'>
+          <calculation class='tableau' formula='&quot;New&quot;' />
           <members>
             <member value='&quot;New&quot;' />
             <member value='&quot;Cumulative&quot;' />
           </members>
         </column>
-        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Positive Cases&quot;'>
-          <calculation class='tableau' formula='&quot;Positive Cases&quot;' />
+        <column caption='Positive Cases or Deaths' datatype='string' name='[Parameter 2]' param-domain-type='list' role='measure' type='nominal' value='&quot;Deaths&quot;'>
+          <calculation class='tableau' formula='&quot;Deaths&quot;' />
           <members>
             <member value='&quot;Deaths&quot;' />
             <member value='&quot;Positive Cases&quot;' />
@@ -1332,39 +1616,7 @@
         <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
           <zone h='98172' id='8' param='horz' type-v2='layout-flow' w='98976' x='512' y='914'>
             <zone h='98172' id='6' type-v2='layout-basic' w='98976' x='512' y='914'>
-              <zone h='12572' id='3' name='Global Title' show-title='false' w='82074' x='512' y='914'>
-                <zone-style>
-                  <format attr='border-color' value='#000000' />
-                  <format attr='border-style' value='none' />
-                  <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
-                </zone-style>
-              </zone>
-              <zone h='79200' id='5' name='Global Bar' w='35211' x='64277' y='19886'>
-                <zone-style>
-                  <format attr='border-color' value='#000000' />
-                  <format attr='border-style' value='none' />
-                  <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
-                </zone-style>
-              </zone>
-              <zone h='6400' id='9' mode='compact' param='[Parameters].[Parameter 1]' type-v2='paramctrl' w='24744' x='25256' y='13486'>
-                <zone-style>
-                  <format attr='border-color' value='#000000' />
-                  <format attr='border-style' value='none' />
-                  <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
-                </zone-style>
-              </zone>
-              <zone h='6400' id='10' mode='compact' param='[Parameters].[Parameter 2]' type-v2='paramctrl' w='24744' x='50000' y='13486'>
-                <zone-style>
-                  <format attr='border-color' value='#000000' />
-                  <format attr='border-style' value='none' />
-                  <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
-                </zone-style>
-              </zone>
-              <zone h='79200' id='11' name='Global Map' w='37260' x='27017' y='19886'>
+              <zone h='12553' id='3' name='Global Title' show-title='false' w='82517' x='512' y='914'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1372,7 +1624,7 @@
                   <format attr='margin' value='0' />
                 </zone-style>
               </zone>
-              <zone h='16914' id='12' name='Global Positive BAN' show-title='false' w='26505' x='512' y='19886'>
+              <zone h='79214' id='5' name='Global Bar' w='35218' x='64270' y='19872'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1380,7 +1632,7 @@
                   <format attr='margin' value='4' />
                 </zone-style>
               </zone>
-              <zone h='23314' id='13' name='Global Positive Over Time' show-title='false' w='26505' x='512' y='36800'>
+              <zone h='6405' id='9' mode='compact' param='[Parameters].[Parameter 1]' type-v2='paramctrl' w='24748' x='25246' y='13467'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1388,7 +1640,7 @@
                   <format attr='margin' value='4' />
                 </zone-style>
               </zone>
-              <zone h='21715' id='14' name='Global Deaths BAN' show-title='false' w='26505' x='512' y='60114'>
+              <zone h='6405' id='10' mode='compact' param='[Parameters].[Parameter 2]' type-v2='paramctrl' w='24741' x='49994' y='13467'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1396,7 +1648,15 @@
                   <format attr='margin' value='4' />
                 </zone-style>
               </zone>
-              <zone h='17257' id='15' name='Global Deaths Over Time' show-title='false' w='26505' x='512' y='81829'>
+              <zone h='79214' id='11' name='Global Map' w='37260' x='27010' y='19872'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='0' />
+                </zone-style>
+              </zone>
+              <zone h='16912' id='12' name='Global Positive BAN' show-title='false' w='26498' x='512' y='19872'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1404,7 +1664,31 @@
                   <format attr='margin' value='4' />
                 </zone-style>
               </zone>
-              <zone h='6286' id='16' type-v2='dashboard-object' w='8515' x='82586' y='914'>
+              <zone h='23317' id='13' name='Global Positive Over Time' show-title='false' w='26498' x='512' y='36784'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='21713' id='14' name='Global Deaths BAN' show-title='false' w='26498' x='512' y='60101'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='17272' id='15' name='Global Deaths Over Time' show-title='false' w='26498' x='512' y='81814'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='6267' id='16' type-v2='dashboard-object' w='8065' x='83029' y='914'>
                 <button action='tabdoc:goto-sheet window-id=&quot;{4EFCD0AC-7CDE-4449-84FC-CFF57C4BD62F}&quot;'>
                   <button-visual-state>
                     <image-path>Image/World map B (1).png</image-path>
@@ -1415,10 +1699,10 @@
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
                   <format attr='border-width' value='0' />
-                  <format attr='margin' value='3' />
+                  <format attr='margin' value='0' />
                 </zone-style>
               </zone>
-              <zone h='6286' id='17' type-v2='dashboard-object' w='8387' x='91101' y='914'>
+              <zone h='6267' id='17' type-v2='dashboard-object' w='8394' x='91094' y='914'>
                 <button action='tabdoc:goto-sheet window-id=&quot;{513ED130-7ECC-4186-81A5-3112586859C6}&quot;'>
                   <button-visual-state>
                     <image-path>Image/US B (1).png</image-path>
@@ -1429,10 +1713,10 @@
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
                   <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
+                  <format attr='margin' value='0' />
                 </zone-style>
               </zone>
-              <zone h='6286' id='18' type-v2='dashboard-object' w='8515' x='82586' y='7200'>
+              <zone h='6286' id='18' type-v2='dashboard-object' w='8065' x='83029' y='7181'>
                 <button action='tabdoc:goto-sheet window-id=&quot;{4EFCD0AC-7CDE-4449-84FC-CFF57C4BD62F}&quot;' button-type='text'>
                   <button-visual-state>
                     <caption>Global</caption>
@@ -1444,10 +1728,10 @@
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
                   <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
+                  <format attr='margin' value='0' />
                 </zone-style>
               </zone>
-              <zone h='6286' id='19' type-v2='dashboard-object' w='8387' x='91101' y='7200'>
+              <zone h='6286' id='19' type-v2='dashboard-object' w='8394' x='91094' y='7181'>
                 <button action='tabdoc:goto-sheet window-id=&quot;{513ED130-7ECC-4186-81A5-3112586859C6}&quot;' button-type='text'>
                   <button-visual-state>
                     <caption>United States</caption>
@@ -1459,10 +1743,10 @@
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
                   <format attr='border-width' value='0' />
-                  <format attr='margin' value='4' />
+                  <format attr='margin' value='0' />
                 </zone-style>
               </zone>
-              <zone h='6400' id='20' type-v2='empty' w='24744' x='512' y='13486'>
+              <zone h='6405' id='20' type-v2='empty' w='24734' x='512' y='13467'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1470,7 +1754,7 @@
                   <format attr='margin' value='4' />
                 </zone-style>
               </zone>
-              <zone h='6400' id='21' type-v2='empty' w='24744' x='74744' y='13486'>
+              <zone h='6405' id='21' type-v2='empty' w='24753' x='74735' y='13467'>
                 <zone-style>
                   <format attr='border-color' value='#000000' />
                   <format attr='border-style' value='none' />
@@ -1486,6 +1770,26 @@
             <format attr='border-width' value='0' />
             <format attr='margin' value='8' />
           </zone-style>
+        </zone>
+        <zone forceUpdate='true' h='14514' hidden-by-user='true' id='22' type-v2='text' w='34059' x='64469' y='17257'>
+          <formatted-text>
+            <run fontcolor='#1d1c1d' fontname='Slack-Lato'>This data is sourced from JHU CSSE COVID-19 Data as well as The New York Times (who is aggregating data from state and local governments and health departments for the United States).Visit the COVID-19 Data Hub (</run>
+            <run auto-url='true' fontcolor='#000000' fontname='Slack-Lato' hyperlink='tabdoc:load-url url=&amp;quot;https://www.tableau.com/covid-19-coronavirus-data-resources&amp;quot;'>https://www.tableau.com/covid-19-coronavirus-data-resources</run>
+            <run fontcolor='#1d1c1d' fontname='Slack-Lato'>), a free resource page, to learn more about the data source and to access data visualizations, quick-start Tableau dashboards, and other partner-created solutions.</run>
+          </formatted-text>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='solid' />
+            <format attr='border-width' value='1' />
+            <format attr='background-color' value='#e6e6e6' />
+          </zone-style>
+        </zone>
+        <zone h='2743' id='23' type-v2='dashboard-object' w='1536' x='97695' y='13829'>
+          <button action='' active-visual-state-index='1'>
+            <toggle-action>tabdoc:toggle-button-click-action window-id=&quot;{513ED130-7ECC-4186-81A5-3112586859C6}&quot; zone-id=&quot;23&quot; zone-ids=[22]</toggle-action>
+            <button-visual-state />
+            <button-visual-state />
+          </button>
         </zone>
       </zones>
       <devicelayouts>
@@ -1731,12 +2035,32 @@
           <zoom type='entire-view' />
         </viewpoint>
       </viewpoints>
-      <active id='16' />
+      <active id='20' />
       <simple-id uuid='{513ED130-7ECC-4186-81A5-3112586859C6}' />
     </window>
     <window class='dashboard' name='With Container'>
-      <viewpoints />
-      <active id='-1' />
+      <viewpoints>
+        <viewpoint name='Global Bar' />
+        <viewpoint name='Global Deaths BAN'>
+          <zoom type='entire-view' />
+        </viewpoint>
+        <viewpoint name='Global Deaths Over Time'>
+          <zoom type='entire-view' />
+        </viewpoint>
+        <viewpoint name='Global Map'>
+          <zoom type='entire-view' />
+        </viewpoint>
+        <viewpoint name='Global Positive BAN'>
+          <zoom type='entire-view' />
+        </viewpoint>
+        <viewpoint name='Global Positive Over Time'>
+          <zoom type='entire-view' />
+        </viewpoint>
+        <viewpoint name='Global Title'>
+          <zoom type='entire-view' />
+        </viewpoint>
+      </viewpoints>
+      <active id='21' />
       <simple-id uuid='{4EFCD0AC-7CDE-4449-84FC-CFF57C4BD62F}' />
     </window>
   </windows>
