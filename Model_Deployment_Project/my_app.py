@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -41,6 +40,21 @@ df = df[features]
 if st.button("See Dataset Sample"):
     st.write(df.sample(5))
 
+# Creating side bar 
+st.sidebar.title("Select the features")
+    
+make_model = st.sidebar.selectbox("Make_Model", df.make_model.unique())
+
+
+gearing_Type = st.sidebar.selectbox("Gearing_Type", df.gearing_type.unique())
+
+age = st.sidebar.number_input("Age:",min_value=0, max_value=4)
+
+# age = st.sidebar.selectbox("age", ("0","1", "2", "3"))
+
+km = st.sidebar.slider("Km", 0.0, 317000.0)
+
+Gears = st.sidebar.number_input("Gears",min_value=5, max_value=8)
 
 
 X = df.drop(columns = ["price_€"])
@@ -74,22 +88,6 @@ model = pickle.load(open('autoscout_deployment_project', 'rb'))
 transformer = pickle.load(open('transformer', 'rb'))
 
 
-# Creating side bar 
-st.sidebar.title("Select the features")
-    
-
-make_model = st.sidebar.selectbox("Make_Model", df.make_model.unique())
-
-
-gearing_Type = st.sidebar.selectbox("Gearing_Type", df.gearing_type.unique())
-
-age = st.sidebar.number_input("Age:",min_value=0, max_value=4)
-
-# age = st.sidebar.selectbox("age", ("0","1", "2", "3"))
-
-km = st.sidebar.slider("Km", 0.0, 317000.0)
-
-Gears = st.sidebar.number_input("Gears",min_value=5, max_value=8)
 
    
 if st.button("Predict"):
