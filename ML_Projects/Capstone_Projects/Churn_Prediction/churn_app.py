@@ -24,7 +24,7 @@ html_temp3 = """
 
 st.markdown(html_temp2,unsafe_allow_html=True)
 
-img = Image.open("image.png")
+img = Image.open("C:\Users\hbpbn\OneDrive\Masaüstü\GİTHUB\Projects\ML_Projects\Capstone_Projects\Churn_Prediction\image.png")
 #img = img.resize((3000, 1500))
 st.image(img, width=500, use_column_width =True) 
 
