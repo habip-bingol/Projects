@@ -9,4 +9,5 @@ __pycache__/
 # Logs
 *.log
 
-sahibinden_bot_result
+sahibinden_bot_result.csv
+cleaned_car_data.csv
